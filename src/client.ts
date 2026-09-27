@@ -14,6 +14,9 @@ export interface MirafiveCommand {
 type Command = ((verb: string, ...args: unknown[]) => unknown) & { q?: ArrayLike<unknown>[] }
 type Host = { mirafive?: Command }
 
+// A flag read replayed after start would count an exposure for a value the page never showed.
+const reads = /^(flag|config)$/
+
 /**
  * The Astro plugin of the generated script: runs `window.mirafive` commands (queued ones first)
  * and, under `<ClientRouter />`, sends a navigation's pageview once the new page is in place.
@@ -29,9 +32,14 @@ export const astro = (): Plugin => ({
     const { pageview } = core.client
     const queued = w.mirafive?.q ?? []
     const command: Command = (verb, ...args) => {
-      const answer = client[
-        verb === "flags" ? "onFlags" : verb === "flagProperties" ? "setFlagProperties" : verb
-      ]?.(...args)
+      const method =
+        client[verb === "flags" ? "onFlags" : verb === "flagProperties" ? "setFlagProperties" : verb]
+
+      if (!method) {
+        return core.warn(`unknown verb ${verb}`)
+      }
+
+      const answer = method(...args)
 
       // The tracker's anonymousId verb answers to a callback, which also works while queued.
       if (verb === "anonymousId" && typeof args[0] === "function") {
@@ -56,14 +64,17 @@ export const astro = (): Plugin => ({
     w.mirafive = command
 
     for (const args of queued) {
-      Reflect.apply(command, undefined, args)
+      if (!reads.test(String(args[0]))) {
+        Reflect.apply(command, undefined, args)
+      }
     }
   }
 })
 
 /**
  * Calls a client method by name, from any script or island. Before the client has started the call
- * is queued on `window.mirafive`, the same queue the hosted tracker snippet uses.
+ * is queued on `window.mirafive`, the same queue the hosted tracker snippet uses; `flag` and `config`
+ * answer their fallback then and are not queued.
  */
 export const mirafive = ((verb: string, ...args: unknown[]): unknown => {
   if (typeof window === "undefined") {
@@ -72,10 +83,16 @@ export const mirafive = ((verb: string, ...args: unknown[]): unknown => {
 
   const w = window as Window & Host
 
-  if (!w.mirafive) {
-    const q: ArrayLike<unknown>[] = []
+  if (!w.mirafive || w.mirafive.q) {
+    if (reads.test(verb)) {
+      return args[1]
+    }
 
-    w.mirafive = Object.assign((...queued: unknown[]) => void q.push(queued), { q })
+    if (!w.mirafive) {
+      const q: ArrayLike<unknown>[] = []
+
+      w.mirafive = Object.assign((...queued: unknown[]) => void q.push(queued), { q })
+    }
   }
 
   return w.mirafive(verb, ...args)

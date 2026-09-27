@@ -16,7 +16,23 @@ const document = {
       r: [{ if: [["s", "3fa9c1e07b"]], x: "on" }],
       w: 1
     },
-    "server-only": { s: "bcdefghijklm", t: "b", u: "b", d: "on", r: [] }
+    "server-only": { s: "bcdefghijklm", t: "b", u: "b", d: "on", r: [] },
+    "price-test": {
+      s: "cdefghijklmn",
+      t: "m",
+      u: "p",
+      d: "a",
+      r: [
+        {
+          w: [
+            ["a", 5000],
+            ["b", 5000]
+          ]
+        }
+      ],
+      e: "o",
+      c: "s"
+    }
   }
 }
 
@@ -33,6 +49,12 @@ const fetchMock = vi.fn(async (input: string | URL, init: RequestInit = {}) => {
     authorization: headers.get("authorization"),
     ...(typeof init.body === "string" ? { body: init.body } : {})
   })
+
+  if (url.endsWith("/v1/batch")) {
+    const { batch, events } = JSON.parse(init.body as string) as { batch: string; events: unknown[] }
+
+    return Response.json({ batch, accepted: events.length, dropped: 0 }, { status: 202 })
+  }
 
   if (url.endsWith("/v1/flags/segments")) {
     const { units } = JSON.parse(init.body as string) as { units: unknown[] }
@@ -114,5 +136,32 @@ describe("miraFlagsFor()", () => {
 
     expect(waitUntil).toHaveBeenCalledWith(expect.any(Promise))
     expect(documents).toBe(2)
+  })
+
+  it("sends the exposure of an experiment counted on the server with the request", async () => {
+    const pending: Promise<unknown>[] = []
+    const user = await miraFlagsFor(
+      request(),
+      { userId: "u_9" },
+      { waitUntil: (promise) => pending.push(promise) }
+    )
+
+    calls.length = 0
+    const variant = user.variant("price-test")
+
+    await Promise.all(pending)
+
+    const batch = calls.find((call) => call.url.endsWith("/v1/batch"))
+
+    expect(batch?.authorization).toBe(`Bearer ${SECRET}`)
+    expect(JSON.parse(batch?.body ?? "{}")).toMatchObject({
+      events: [
+        {
+          name: "$exposure",
+          userId: "u_9",
+          properties: { $experiment: "price-test", $variant: variant }
+        }
+      ]
+    })
   })
 })

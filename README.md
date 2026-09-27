@@ -8,12 +8,12 @@ the EU.
 
 | Import | min + gzip |
 |---|---|
-| Injected script, default config (core, pageviews, `astro()`, a key) | 2.53 kB |
+| Injected script, default config (core, pageviews, `astro()`, a key) | 2.59 kB |
 | The same `createMira({ key, plugins: [pageviews()] })` without this package | 2.36 kB |
-| Injected script, `mode: "full"` with every feature | 6.97 kB |
-| `@mirafive/sdk-astro/client` `mirafive()` in your own scripts | 0.11 kB |
-| `@mirafive/sdk-astro/server` (plus `@mirafive/sdk-server/flags`, server only) | 0.27 kB |
-| `@mirafive/sdk-astro` (the integration; runs at build time, never shipped) | 1.07 kB |
+| Injected script, `mode: "full"` with every feature | 7.01 kB |
+| `@mirafive/sdk-astro/client` `mirafive()` in your own scripts | 0.16 kB |
+| `@mirafive/sdk-astro/server` (plus `@mirafive/sdk-server`, server only) | 0.29 kB |
+| `@mirafive/sdk-astro` (the integration; runs at build time, never shipped) | 1.16 kB |
 
 What you do not list in `features` is not shipped: the injected script imports only the
 `@mirafive/sdk-browser` subpaths it needs, and your bundler tree-shakes the rest.
@@ -150,7 +150,7 @@ createMira({ "key":"mf_…","mode":"full", plugins: [pageviews(), identity(), fl
 
 | Export | |
 |---|---|
-| `mirafive(verb, ...args)` | the hosted tracker's verbs: `track`, `pageview`, `flush`, `consent`, `identify`, `reset`, `anonymousId`, `search`, `flag`, `config`, `flags` (listener), `flagProperties`, and every other client method by name (`onFlags`, `setFlagProperties`), typed per verb. `mirafive("anonymousId", (id) => …)` answers to the callback, also when queued. Queued on `window.mirafive` until the client runs (then `undefined` is returned); `undefined` on the server |
+| `mirafive(verb, ...args)` | the hosted tracker's verbs: `track`, `pageview`, `flush`, `consent`, `identify`, `reset`, `anonymousId`, `search`, `flag`, `config`, `flags` (listener), `flagProperties`, and every other client method by name (`onFlags`, `setFlagProperties`), typed per verb. `mirafive("anonymousId", (id) => …)` answers to the callback, also when queued. Queued on `window.mirafive` until the client runs (then `undefined` is returned), except `flag` and `config`: they answer their fallback until then and are never queued, since a replayed read would count an exposure for a value the page never showed (read flags in the `flags` listener). Unknown verbs warn in development. `undefined` on the server |
 | `astro()` | the `@mirafive/sdk-browser` plugin the injected script ends with: installs `window.mirafive`, runs its queue, and holds a `<ClientRouter />` navigation's pageview until `astro:page-load` |
 | `MirafiveCommand` | the type of `mirafive` |
 
@@ -158,7 +158,7 @@ createMira({ "key":"mf_…","mode":"full", plugins: [pageviews(), identity(), fl
 
 | Export | |
 |---|---|
-| `miraFlagsFor(context, unit?, { waitUntil? }?): Promise<UserFlags>` | `context` is `Astro` or an `APIContext`; `unit` is `@mirafive/sdk-server`'s `{ userId?, anonymousId?, properties?, consent?, optedOut? }`; `waitUntil` is this request's, for background refreshes and exposures on Workers. One `MiraFlags` per server process, from `MIRAFIVE_SECRET_KEY` and `MIRAFIVE_HOST` read with `astro:env/server`'s `getSecret`. `Sec-GPC: 1` / `DNT: 1` set `optedOut`. |
+| `miraFlagsFor(context, unit?, { waitUntil? }?): Promise<UserFlags>` | `context` is `Astro` or an `APIContext`; `unit` is `@mirafive/sdk-server`'s `{ userId?, anonymousId?, properties?, consent?, optedOut? }`; `waitUntil` is this request's, for background refreshes and exposures on Workers. One `MiraFlags` per server process, from `MIRAFIVE_SECRET_KEY` and `MIRAFIVE_HOST` read with `astro:env/server`'s `getSecret`, with one `Mira` on the same key that sends the `$exposure` of experiments counted on the server (`c: "s"`, also when a bootstrap hands one to the page); a request's `waitUntil` flushes it. `Sec-GPC: 1` / `DNT: 1` set `optedOut`. |
 | `MiraFlagsScript` | component, `flags` prop: renders `flags.bootstrap()`, the `<script type="application/json" id="mirafive-flags">` block the browser `flags()` plugin reads at start. |
 | `MiraFlagsScriptProps` | its props type |
 
@@ -181,6 +181,9 @@ createMira({ "key":"mf_…","mode":"full", plugins: [pageviews(), identity(), fl
   (`bootstrapHeaders` from `@mirafive/sdk-server/flags`) from the page's frontmatter;
   headers set inside a component may arrive after the response has started. The browser
   reads the block once at start; later `<ClientRouter />` pages refetch flags instead.
+- **pnpm and other strict installs.** The injected module imports `@mirafive/sdk-browser`
+  by the file path resolved from this package, so it works when the peer is linked only
+  beside `@mirafive/sdk-astro` and not in the project root.
 - **Secrets.** The server entry reads `getSecret("MIRAFIVE_SECRET_KEY")`, so it works
   with every adapter's runtime env and with `.env` under `astro dev`. It needs this
   integration in `astro.config`, which also keeps the package inside Vite's SSR bundle

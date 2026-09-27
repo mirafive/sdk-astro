@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 
 import type { AstroIntegration, HookParameters } from "astro"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -8,6 +9,19 @@ import { mirafive as run } from "../src/client.ts"
 import defaultExport, { type MirafiveOptions, mirafive } from "../src/index.ts"
 
 const KEY = "mf_ab12cd34_0123456789abcdefghijklmnop"
+
+const specifiers = [
+  "@mirafive/sdk-browser",
+  ...["pageviews", "identity", "autocapture", "search", "flags", "experiments"].map(
+    (path) => `@mirafive/sdk-browser/${path}`
+  ),
+  "@mirafive/sdk-astro/client"
+]
+const located = (specifier: string): string => fileURLToPath(import.meta.resolve(specifier))
+
+/** The generated script with the resolved files named by their package specifiers again. */
+const bare = (script: string): string =>
+  specifiers.reduce((text, specifier) => text.replaceAll(`"${located(specifier)}"`, `"${specifier}"`), script)
 
 interface VitePlugin {
   configResolved(config: { env: Record<string, unknown> }): void
@@ -38,13 +52,18 @@ const setup = (
 
   plugin?.configResolved({ env })
 
-  const script = (): string | undefined => {
+  const raw = (): string | undefined => {
     const id = plugin?.resolveId("virtual:mirafive/astro")
 
     return id === undefined ? undefined : plugin?.load(id)
   }
+  const script = (): string | undefined => {
+    const text = raw()
 
-  return { injected, logs, vite, script }
+    return text === undefined ? undefined : bare(text)
+  }
+
+  return { injected, logs, vite, script, raw }
 }
 
 const read = (name: string): string => readFileSync(join(import.meta.dirname, "size", name), "utf8")
@@ -76,6 +95,19 @@ describe("integration", () => {
         ""
       ].join("\n")
     )
+  })
+
+  it("imports files resolved from this package, not bare names the project root may lack", () => {
+    const paths = [
+      ...(setup({ mode: "full", features: ["flags"] }).raw() ?? "").matchAll(/from "([^"]+)"/g)
+    ].map(([, path]) => path)
+
+    expect(paths).toEqual(
+      ["@mirafive/sdk-browser", "pageviews", "identity", "flags"]
+        .map((path) => located(path.startsWith("@") ? path : `@mirafive/sdk-browser/${path}`))
+        .concat(located("@mirafive/sdk-astro/client"))
+    )
+    expect(paths.every((path) => path?.startsWith("/") && path.endsWith(".js"))).toBe(true)
   })
 
   it("prefers the key option, trims it and passes host", () => {

@@ -20,7 +20,8 @@ bun run example          # build first, then: npm install and astro build (defau
 
 - `src/index.ts`: the integration. It injects `import "virtual:mirafive/astro"`; a Vite
   plugin answers that module from `src/script.ts` once Vite has loaded the env, so the
-  key comes from `PUBLIC_MIRAFIVE_KEY` in any `.env`/mode.
+  key comes from `PUBLIC_MIRAFIVE_KEY` in any `.env`/mode. Its imports are file paths
+  resolved from this package (`import.meta.resolve`), not bare names, for pnpm.
 - `src/client.ts`: `astro()` (`window.mirafive` and the `<ClientRouter />` pageview hold)
   and the `mirafive()` command. Browser code: bytes count.
 - `src/server.ts`, `src/flags.ts`, `components/MiraFlagsScript.astro`: the server entry.
@@ -39,8 +40,9 @@ bun run example          # build first, then: npm install and astro build (defau
   remove exports without changing API.md first.
 - Thin: no transport, no evaluator. Everything goes through sdk-browser's `MiraCore`
   and sdk-server's `MiraFlags`; `context.sdk` stays what the SDK reports.
-- Bundle size: the default injected script stays within ~180 B (min + gzip) of
-  `baseline.js` (the goal was 150 B; the tracker verbs cost ~45 B). Limits in
+- Bundle size: the default injected script stays within ~240 B (min + gzip) of
+  `baseline.js` (the goal was 150 B; the tracker verbs, the flag-read guard and the
+  unknown-verb warning cost ~100 B). Limits in
   `.size-limit.js` are the measured size plus ~3 %. Grow `astro()` only with a reason in
   the change.
 - The injected script imports only the sdk-browser subpaths the config needs; keep the

@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url"
+
 import type { AstroIntegration } from "astro"
 
 import { clientScript, type Feature } from "./script.ts"
@@ -21,6 +23,15 @@ export interface MirafiveOptions {
 
 const known: readonly Feature[] = ["autocapture", "search", "flags", "experiments"]
 const virtual = "virtual:mirafive/astro"
+
+// From this package, not the project root: pnpm links the sdk-browser peer beside this package only.
+const resolve = (specifier: string): string => {
+  try {
+    return fileURLToPath(import.meta.resolve(specifier)).replaceAll("\\", "/")
+  } catch {
+    return specifier
+  }
+}
 
 const fail = (message: string): never => {
   throw new TypeError(`[@mirafive/sdk-astro] ${message}`)
@@ -92,13 +103,16 @@ export const mirafive = (options: MirafiveOptions = {}): AstroIntegration => {
                         return ""
                       }
 
-                      return clientScript({
-                        key,
-                        host,
-                        mode,
-                        features: known.filter((feature) => features.has(feature)),
-                        trackLocalhost: options.trackLocalhost ?? (command === "dev" && dev)
-                      })
+                      return clientScript(
+                        {
+                          key,
+                          host,
+                          mode,
+                          features: known.filter((feature) => features.has(feature)),
+                          trackLocalhost: options.trackLocalhost ?? (command === "dev" && dev)
+                        },
+                        resolve
+                      )
                     }
                   }
                 ]

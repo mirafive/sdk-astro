@@ -127,6 +127,43 @@ describe("window.mirafive", () => {
     expect(setFlagProperties).toHaveBeenCalledWith({ plan: "pro" })
   })
 
+  it("answers queued flag reads with the fallback and never replays them", async () => {
+    const flag = vi.fn(() => "b")
+    const config = vi.fn()
+
+    expect(mirafive("flag", "pricing-test", "a")).toBe("a")
+    expect(mirafive("config", "limits", { max: 1 })).toEqual({ max: 1 })
+    expect(w["mirafive"]).toBeUndefined()
+    // The hosted tracker's stub queues everything; the plugin skips the reads when it replays.
+    w["mirafive"] = Object.assign(() => undefined, {
+      q: [
+        ["flag", "pricing-test", "a"],
+        ["track", "kept"]
+      ]
+    })
+    const client = start({
+      plugins: [{ name: "flags", setup: (core) => core.expose({ flag, config }) }, astro()]
+    })
+
+    await client.flush()
+    expect(flag).not.toHaveBeenCalled()
+    expect(config).not.toHaveBeenCalled()
+    expect(events().map((event) => event.name)).toEqual(["kept"])
+    expect(mirafive("flag", "pricing-test", "a")).toBe("b")
+    expect(flag).toHaveBeenCalledWith("pricing-test", "a")
+  })
+
+  it("warns about unknown verbs in development", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+
+    w.happyDOM.setURL("http://localhost/")
+    start({ plugins: [astro()] })
+    ;(w["mirafive"] as (...args: unknown[]) => void)("trak", "typo")
+
+    expect(warn).toHaveBeenCalledWith("[mirafive] unknown verb trak")
+    warn.mockRestore()
+  })
+
   it("sends nothing once the client is destroyed", async () => {
     const client = start()
 
