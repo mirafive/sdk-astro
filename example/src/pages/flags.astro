@@ -1,0 +1,18 @@
+---
+import { bootstrapHeaders } from "@mirafive/sdk-server/flags"
+import { miraFlagsFor, MiraFlagsScript } from "@mirafive/sdk-astro/server"
+import Layout from "../layouts/Layout.astro"
+
+export const prerender = false
+
+const flags = await miraFlagsFor(Astro, { userId: Astro.url.searchParams.get("user") ?? undefined })
+
+for (const [name, value] of Object.entries(bootstrapHeaders)) {
+  Astro.response.headers.set(name, value)
+}
+---
+
+<Layout title="Flags">
+  <MiraFlagsScript slot="head" flags={flags} />
+  <h1>New checkout: {flags.enabled("new-checkout") ? "on" : "off"}</h1>
+</Layout>

@@ -1,0 +1,11 @@
+---
+import type { UserFlags } from "@mirafive/sdk-server/flags"
+
+interface Props {
+  flags: UserFlags
+}
+
+const { flags } = Astro.props
+---
+
+<Fragment set:html={flags.bootstrap()} />

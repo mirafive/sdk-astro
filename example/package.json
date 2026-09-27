@@ -1,0 +1,18 @@
+{
+  "name": "mirafive-sdk-astro-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "build:full": "EXAMPLE_MODE=full astro build",
+    "start": "node dist/server/entry.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.6",
+    "@mirafive/sdk-astro": "file:..",
+    "@mirafive/sdk-browser": "file:../../sdk-browser",
+    "@mirafive/sdk-server": "file:../../sdk-server",
+    "astro": "^7.3.5"
+  }
+}
