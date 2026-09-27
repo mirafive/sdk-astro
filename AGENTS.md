@@ -30,9 +30,9 @@ bun run example          # build first, then: npm install and astro build (defau
 - `test/size/*.js`: the generated scripts size-limit measures; `test/integration.test.ts`
   fails when the generator drifts from them. `baseline.js` is the same `createMira` call
   without this package.
-- `example/`: an Astro 7 site (node adapter, one on-demand page) on the local `file:`
-  packages. Installed with npm, not Bun (Bun installs a `file:` package's devDependencies
-  and resolves their `file:` paths from the wrong directory). Not in the npm package.
+- `example/`: an Astro 7 site (node adapter, one on-demand page) on this package
+  (`file:..`) and the published sdk-browser/sdk-server. Installed with npm. Not in the npm
+  package.
 
 ## Rules
 
@@ -55,12 +55,8 @@ bun run example          # build first, then: npm install and astro build (defau
 - Comments only for a non-obvious constraint, one or two lines.
 - Do not run git write commands unless asked; the maintainer commits.
 
-## Until sdk-browser and sdk-server 1.0.0 are on npm
+## Dependencies
 
-- `devDependencies` point at `file:../sdk-browser` and `file:../sdk-server` (their
-  `dist/` must be built: `bun run build` there). Switch both to `^1.0.0`, drop
-  `overrides` and refresh `bun.lock` once they are published; CI cannot resolve the
-  `file:` paths. The peer ranges are already `^1.0.0`.
-- `overrides` pins `@mirafive/sdk-browser` to the `file:` path because Bun looks every
-  peer up on the registry, and an unpublished name answers 404.
-- `example/package.json` uses `file:` paths too; switch it to the published versions.
+sdk-browser and sdk-server are ordinary `^1.0.0` dependencies from npm. To try an
+unreleased change, build the sibling repo and `bun link` it; never commit a `file:` path
+or `overrides`.

@@ -11,8 +11,8 @@
   "dependencies": {
     "@astrojs/node": "^11.1.6",
     "@mirafive/sdk-astro": "file:..",
-    "@mirafive/sdk-browser": "file:../../sdk-browser",
-    "@mirafive/sdk-server": "file:../../sdk-server",
+    "@mirafive/sdk-browser": "^1.0.0",
+    "@mirafive/sdk-server": "^1.0.0",
     "astro": "^7.3.5"
   }
 }
