@@ -1,6 +1,6 @@
 {
   "name": "@mirafive/sdk-astro",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "MIRA FIVE for Astro: privacy-first analytics bundled into the site's own JavaScript, and server-rendered feature flags.",
   "keywords": [
     "ab-testing",
@@ -69,8 +69,8 @@
     "vitest": "^5.0.2"
   },
   "peerDependencies": {
-    "@mirafive/sdk-browser": "^0.5.0",
-    "@mirafive/sdk-server": "^0.5.0",
+    "@mirafive/sdk-browser": "^1.0.0",
+    "@mirafive/sdk-server": "^1.0.0",
     "astro": "^7.0.0"
   },
   "peerDependenciesMeta": {

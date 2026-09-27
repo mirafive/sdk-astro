@@ -1,9 +1,9 @@
 # Changelog
 
-## 0.5.0 — unreleased
+## 1.0.0 — unreleased
 
 Rebuilt from scratch as a thin layer over `@mirafive/sdk-browser` and
-`@mirafive/sdk-server` 0.5 on the v1 protocol.
+`@mirafive/sdk-server` 1.0 on the v1 protocol.
 
 - `mirafive({ key, host, mode, features, dev, trackLocalhost })`: injects one module
   per page that imports only the sdk-browser subpaths the config needs (pageviews,

@@ -55,12 +55,12 @@ bun run example          # build first, then: npm install and astro build (defau
 - Comments only for a non-obvious constraint, one or two lines.
 - Do not run git write commands unless asked; the maintainer commits.
 
-## Until sdk-browser and sdk-server 0.5.0 are on npm
+## Until sdk-browser and sdk-server 1.0.0 are on npm
 
 - `devDependencies` point at `file:../sdk-browser` and `file:../sdk-server` (their
-  `dist/` must be built: `bun run build` there). Switch both to `^0.5.0`, drop
+  `dist/` must be built: `bun run build` there). Switch both to `^1.0.0`, drop
   `overrides` and refresh `bun.lock` once they are published; CI cannot resolve the
-  `file:` paths. The peer ranges are already `^0.5.0`.
+  `file:` paths. The peer ranges are already `^1.0.0`.
 - `overrides` pins `@mirafive/sdk-browser` to the `file:` path because Bun looks every
   peer up on the registry, and an unpublished name answers 404.
 - `example/package.json` uses `file:` paths too; switch it to the published versions.

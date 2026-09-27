@@ -22,8 +22,8 @@
         "vitest": "^5.0.2",
       },
       "peerDependencies": {
-        "@mirafive/sdk-browser": "^0.5.0",
-        "@mirafive/sdk-server": "^0.5.0",
+        "@mirafive/sdk-browser": "^1.0.0",
+        "@mirafive/sdk-server": "^1.0.0",
         "astro": "^7.0.0",
       },
       "optionalPeers": [

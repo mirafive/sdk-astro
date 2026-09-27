@@ -27,8 +27,8 @@ npm install @mirafive/sdk-server
 # or: bun add / pnpm add / yarn add
 ```
 
-Astro 7, Node ≥ 22.12. `@mirafive/sdk-browser` 0.5 is a required peer,
-`@mirafive/sdk-server` 0.5 an optional one (only for `@mirafive/sdk-astro/server`).
+Astro 7, Node ≥ 22.12. `@mirafive/sdk-browser` 1.0 is a required peer,
+`@mirafive/sdk-server` 1.0 an optional one (only for `@mirafive/sdk-astro/server`).
 
 ## Quickstart
 
