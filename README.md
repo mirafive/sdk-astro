@@ -8,9 +8,9 @@ the EU.
 
 | Import | min + gzip |
 |---|---|
-| Injected script, default config (core, pageviews, `astro()`, a key) | 2.59 kB |
-| The same `createMira({ key, plugins: [pageviews()] })` without this package | 2.36 kB |
-| Injected script, `mode: "full"` with every feature | 7.01 kB |
+| Injected script, default config (core, pageviews, `astro()`, a key) | 3.05 kB |
+| The same `createMira({ key, plugins: [pageviews()] })` without this package | 2.82 kB |
+| Injected script, `mode: "full"` with every feature | 7.58 kB |
 | `@mirafive/sdk-astro/client` `mirafive()` in your own scripts | 0.16 kB |
 | `@mirafive/sdk-astro/server` (plus `@mirafive/sdk-server`, server only) | 0.29 kB |
 | `@mirafive/sdk-astro` (the integration; runs at build time, never shipped) | 1.16 kB |

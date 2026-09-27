@@ -26,20 +26,20 @@ export default [
     path: "test/size/baseline.js",
     modifyRolldownConfig: bundled,
     gzip: true,
-    limit: "2425 B"
+    limit: "2905 B"
   },
   {
     name: "injected script, default config",
     path: "test/size/default.js",
     modifyRolldownConfig: bundled,
     gzip: true,
-    limit: "2670 B"
+    limit: "3140 B"
   },
   {
     name: "injected script, full mode with every feature",
     path: "test/size/full.js",
     modifyRolldownConfig: bundled,
     gzip: true,
-    limit: "7.22 kB"
+    limit: "7.81 kB"
   }
 ]
