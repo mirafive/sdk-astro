@@ -1,7 +1,7 @@
 {
   "name": "@mirafive/sdk-astro",
   "version": "1.0.0",
-  "description": "MIRA FIVE for Astro: privacy-first analytics bundled into the site's own JavaScript, and server-rendered feature flags.",
+  "description": "MIRA FIVE SDK for Astro",
   "keywords": [
     "ab-testing",
     "analytics",
