@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — unreleased
+## 1.0.0 — 2026-09-27
 
 Rebuilt from scratch as a thin layer over `@mirafive/sdk-browser` and
 `@mirafive/sdk-server` 1.0 on the v1 protocol.
