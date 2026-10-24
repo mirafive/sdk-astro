@@ -51,8 +51,10 @@ import { mirafive } from "@mirafive/sdk-astro/client"
 mirafive("track", "signup", { plan: "pro" })
 ```
 
+For revenue, add `payment_id` (1–255 characters) to the properties next to `revenue` and `currency`: the payment provider's id of the payment. For Stripe pass the Checkout Session id on the success page or the PaymentIntent id from a webhook, for example `mirafive("track", "order completed", { revenue: 49, currency: "EUR", payment_id: sessionId })`. MIRA FIVE merges the event with the payment it imports from your connected Stripe account, so the sale counts once.
+
 Verify it: `astro build && astro preview` does not send from `localhost`; deploy (or pass
-`trackLocalhost: true`) and look for `POST https://events.mirafive.io/v1/batch/mf_…`
+`trackLocalhost: true`) and look for `POST https://collect.mirafive.io/v1/batch/mf_…`
 answering `202` in the browser's network tab, then for the pageview in the source's live
 view in MIRA FIVE. `view-source:` shows no `<script src>` from a third-party origin.
 
@@ -96,7 +98,7 @@ works).
 | Option | Default | |
 |---|---|---|
 | `key` | `PUBLIC_MIRAFIVE_KEY` | the source's website key (`mf_…`); without one, a build warning and nothing injected |
-| `host` | `https://events.mirafive.io` | must have a scheme |
+| `host` | `https://collect.mirafive.io` | must have a scheme |
 | `mode` | `"consentless"` | `"full"` bundles `identity()` |
 | `features` | `[]` | any of `"autocapture"`, `"search"`; `search` needs `mode: "full"` |
 | `dev` | `false` | also run under `astro dev`, sending from localhost there |
@@ -140,7 +142,7 @@ createMira({ "key":"mf_…","mode":"full", plugins: [pageviews(), identity(), au
 - **pnpm and other strict installs.** The injected module imports `@mirafive/sdk-browser`
   by the file path resolved from this package, so it works when the peer is linked only
   beside `@mirafive/sdk-astro` and not in the project root.
-- **CSP:** `connect-src https://events.mirafive.io` (or your `host`). No `script-src`
+- **CSP:** `connect-src https://collect.mirafive.io` (or your `host`). No `script-src`
   change: the code is part of your own bundle.
 - **`astro dev`** sends nothing unless `dev: true`; `window.mirafive` calls then queue
   harmlessly.
@@ -172,7 +174,7 @@ Add MIRA FIVE analytics to this Astro site with @mirafive/sdk-astro.
    mirafive("consent", true) / mirafive("consent", false).
 5. Verify: run the build, check that dist HTML has no MIRA FIVE <script src> from another
    origin, deploy (or set trackLocalhost: true and preview), and confirm
-   POST https://events.mirafive.io/v1/batch/<key> answers 202 in the network tab. Report
+   POST https://collect.mirafive.io/v1/batch/<key> answers 202 in the network tab. Report
    what you changed.
 Do not add other analytics libraries, cookies or consent banners.
 ```

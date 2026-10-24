@@ -9,7 +9,7 @@ export type { Feature } from "./script.ts"
 export interface MirafiveOptions {
   /** The source's website key (`mf_…`). Default: `PUBLIC_MIRAFIVE_KEY`. */
   key?: string
-  /** Default `https://events.mirafive.io`. */
+  /** Default `https://collect.mirafive.io`. */
   host?: string
   /** Default `"consentless"`. `"full"` adds `identity()` and waits for `consent()`. */
   mode?: "consentless" | "full"
