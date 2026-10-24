@@ -76,6 +76,7 @@ export const astro = (): Plugin => ({
  * is queued on `window.mirafive`, the same queue the hosted tracker snippet uses; `flag` and `config`
  * answer their fallback then and are not queued.
  */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the running client answers for its method
 export const mirafive = ((verb: string, ...args: unknown[]): unknown => {
   if (typeof window === "undefined") {
     return undefined
@@ -96,5 +97,4 @@ export const mirafive = ((verb: string, ...args: unknown[]): unknown => {
   }
 
   return w.mirafive(verb, ...args)
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the running client answers for its method
 }) as MirafiveCommand
