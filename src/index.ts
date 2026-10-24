@@ -13,7 +13,7 @@ export interface MirafiveOptions {
   host?: string
   /** Default `"consentless"`. `"full"` adds `identity()` and waits for `consent()`. */
   mode?: "consentless" | "full"
-  /** Plugins bundled besides pageviews. `experiments` brings `flags`; `search` and `experiments` need mode `"full"`. */
+  /** Plugins bundled besides pageviews. `search` needs mode `"full"`. */
   features?: Feature[]
   /** Also run under `astro dev` (and send from localhost there). Default `false`. */
   dev?: boolean
@@ -21,7 +21,7 @@ export interface MirafiveOptions {
   trackLocalhost?: boolean
 }
 
-const known: readonly Feature[] = ["autocapture", "search", "flags", "experiments"]
+const known: readonly Feature[] = ["autocapture", "search"]
 const virtual = "virtual:mirafive/astro"
 
 // From this package, not the project root: pnpm links the sdk-browser peer beside this package only.
@@ -59,13 +59,9 @@ export const mirafive = (options: MirafiveOptions = {}): AstroIntegration => {
       fail(`unknown feature "${feature}"`)
     }
 
-    if (mode !== "full" && (feature === "search" || feature === "experiments")) {
+    if (mode !== "full" && feature === "search") {
       fail(`"${feature}" needs mode "full"`)
     }
-  }
-
-  if (features.has("experiments")) {
-    features.add("flags")
   }
 
   return {

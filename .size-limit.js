@@ -9,18 +9,10 @@ export default [
     import: "{ mirafive }",
     ignore: ["node:url"],
     gzip: true,
-    limit: "1.19 kB"
+    limit: "1.15 kB"
   },
-  { name: "client: astro()", path: "dist/client.js", import: "{ astro }", gzip: true, limit: "375 B" },
-  { name: "client: mirafive()", path: "dist/client.js", import: "{ mirafive }", gzip: true, limit: "161 B" },
-  {
-    name: "server",
-    path: "dist/server.js",
-    import: "{ miraFlagsFor, MiraFlagsScript }",
-    ignore: ["astro:env/server", "../components/MiraFlagsScript.astro"],
-    gzip: true,
-    limit: "302 B"
-  },
+  { name: "client: astro()", path: "dist/client.js", import: "{ astro }", gzip: true, limit: "307 B" },
+  { name: "client: mirafive()", path: "dist/client.js", import: "{ mirafive }", gzip: true, limit: "118 B" },
   {
     name: "baseline: sdk-browser core + pageviews, same key",
     path: "test/size/baseline.js",
@@ -33,13 +25,13 @@ export default [
     path: "test/size/default.js",
     modifyRolldownConfig: bundled,
     gzip: true,
-    limit: "3140 B"
+    limit: "3090 B"
   },
   {
     name: "injected script, full mode with every feature",
     path: "test/size/full.js",
     modifyRolldownConfig: bundled,
     gzip: true,
-    limit: "7.81 kB"
+    limit: "5.02 kB"
   }
 ]

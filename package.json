@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "description": "MIRA FIVE SDK for Astro",
   "keywords": [
-    "ab-testing",
     "analytics",
     "astro",
     "astro-integration",
     "cookieless",
-    "feature-flags",
     "gdpr",
     "mirafive",
     "privacy",
@@ -25,7 +23,6 @@
     "url": "git+https://github.com/mirafive/sdk-astro.git"
   },
   "files": [
-    "components",
     "dist"
   ],
   "type": "module",
@@ -33,7 +30,6 @@
   "exports": {
     ".": "./dist/index.js",
     "./client": "./dist/client.js",
-    "./server": "./dist/server.js",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -54,7 +50,6 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
     "@mirafive/sdk-browser": "^1.0.0",
-    "@mirafive/sdk-server": "^1.0.0",
     "@size-limit/preset-small-lib": "^14.3.0",
     "@types/node": "^26.6.5",
     "astro": "^7.4.2",
@@ -70,13 +65,7 @@
   },
   "peerDependencies": {
     "@mirafive/sdk-browser": "^1.0.0",
-    "@mirafive/sdk-server": "^1.0.0",
     "astro": "^7.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@mirafive/sdk-server": {
-      "optional": true
-    }
   },
   "engines": {
     "node": ">=22.12.0"

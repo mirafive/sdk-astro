@@ -12,9 +12,7 @@ const KEY = "mf_ab12cd34_0123456789abcdefghijklmnop"
 
 const specifiers = [
   "@mirafive/sdk-browser",
-  ...["pageviews", "identity", "autocapture", "search", "flags", "experiments"].map(
-    (path) => `@mirafive/sdk-browser/${path}`
-  ),
+  ...["pageviews", "identity", "autocapture", "search"].map((path) => `@mirafive/sdk-browser/${path}`),
   "@mirafive/sdk-astro/client"
 ]
 const located = (specifier: string): string => fileURLToPath(import.meta.resolve(specifier))
@@ -99,11 +97,11 @@ describe("integration", () => {
 
   it("imports files resolved from this package, not bare names the project root may lack", () => {
     const paths = [
-      ...(setup({ mode: "full", features: ["flags"] }).raw() ?? "").matchAll(/from "([^"]+)"/g)
+      ...(setup({ mode: "full", features: ["autocapture"] }).raw() ?? "").matchAll(/from "([^"]+)"/g)
     ].map(([, path]) => path)
 
     expect(paths).toEqual(
-      ["@mirafive/sdk-browser", "pageviews", "identity", "flags"]
+      ["@mirafive/sdk-browser", "pageviews", "identity", "autocapture"]
         .map((path) => located(path.startsWith("@") ? path : `@mirafive/sdk-browser/${path}`))
         .concat(located("@mirafive/sdk-astro/client"))
     )
@@ -119,13 +117,11 @@ describe("integration", () => {
   it.each<[MirafiveOptions, string[]]>([
     [{}, ["pageviews"]],
     [{ features: ["autocapture"] }, ["pageviews", "autocapture"]],
-    [{ features: ["flags"] }, ["pageviews", "flags"]],
     [{ mode: "full" }, ["pageviews", "identity"]],
     [{ mode: "full", features: ["search"] }, ["pageviews", "identity", "search"]],
-    [{ mode: "full", features: ["experiments"] }, ["pageviews", "identity", "flags", "experiments"]],
     [
-      { mode: "full", features: ["experiments", "flags", "search", "autocapture", "flags"] },
-      ["pageviews", "identity", "autocapture", "search", "flags", "experiments"]
+      { mode: "full", features: ["search", "autocapture", "search"] },
+      ["pageviews", "identity", "autocapture", "search"]
     ]
   ])("bundles only the plugin subpaths for %j", (options, plugins) => {
     const script = setup(options).script()
@@ -140,14 +136,14 @@ describe("integration", () => {
 
   it("keeps the generated scripts measured by size-limit current", () => {
     expect(setup({ key: KEY }).script()).toBe(read("default.js"))
-    expect(
-      setup({ key: KEY, mode: "full", features: ["autocapture", "search", "flags", "experiments"] }).script()
-    ).toBe(read("full.js"))
+    expect(setup({ key: KEY, mode: "full", features: ["autocapture", "search"] }).script()).toBe(
+      read("full.js")
+    )
   })
 
   it.each<[Record<string, unknown>, RegExp]>([
     [{ features: ["search"] }, /"search" needs mode "full"/],
-    [{ features: ["experiments"] }, /"experiments" needs mode "full"/],
+    [{ features: ["flags"] }, /unknown feature "flags"/],
     [{ features: ["clicks"] }, /unknown feature "clicks"/],
     [{ mode: "anonymous" }, /unknown mode "anonymous"/],
     [{ host: "events.example.com" }, /host needs a scheme/],

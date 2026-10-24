@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking:** feature flags and A/B experiments are removed. `features` no longer
+  accepts `"flags"` or `"experiments"` (the integration throws for them), the
+  `@mirafive/sdk-astro/server` entry (`miraFlagsFor`, `MiraFlagsScript`) is gone, and the
+  optional peer `@mirafive/sdk-server` is no longer used. `mirafive()` from
+  `@mirafive/sdk-astro/client` no longer takes the `flags` and `flagProperties` verbs and
+  queues every verb, as `flag` and `config` no longer exist.
+- Consent: statistics is the only purpose. The `experiments` and `targeting` purposes are
+  gone. `mirafive("consent", { experiments, targeting })` from an existing site still
+  works; sdk-browser accepts and ignores the keys.
+
+
 ## 1.0.0 — 2026-09-27
 
 Rebuilt from scratch as a thin layer over `@mirafive/sdk-browser` and

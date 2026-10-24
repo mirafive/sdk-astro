@@ -7,5 +7,5 @@ const full = process.env.EXAMPLE_MODE === "full"
 
 export default defineConfig({
   adapter: node({ mode: "standalone" }),
-  integrations: [mirafive(full ? { mode: "full", features: ["autocapture", "flags"] } : {})]
+  integrations: [mirafive(full ? { mode: "full", features: ["autocapture"] } : {})]
 })

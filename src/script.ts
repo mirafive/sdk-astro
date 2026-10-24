@@ -1,4 +1,4 @@
-export type Feature = "autocapture" | "search" | "flags" | "experiments"
+export type Feature = "autocapture" | "search"
 
 export interface ScriptConfig {
   key: string
@@ -12,9 +12,7 @@ const plugins = [
   ["pageviews", "pageviews"],
   ["identity", "identity"],
   ["autocapture", "autocapture"],
-  ["search", "siteSearch"],
-  ["flags", "flags"],
-  ["experiments", "experiments"]
+  ["search", "siteSearch"]
 ] as const
 
 /** The module injected into every page: the core, the configured plugin subpaths and nothing else. */

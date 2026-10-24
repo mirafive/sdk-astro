@@ -60,7 +60,6 @@ describe("window.mirafive", () => {
 
     const client = start({ plugins: [astro()] })
 
-    expect(mirafive("flag", "missing", true)).toBe(true)
     mirafive("track", "running")
     await client.flush()
 
@@ -110,47 +109,13 @@ describe("window.mirafive", () => {
     expect(late).toHaveBeenCalledWith(early.mock.calls[0]?.[0])
   })
 
-  it("takes the tracker's flags and flagProperties verbs", () => {
-    const onFlags = vi.fn(() => () => undefined)
-    const setFlagProperties = vi.fn()
+  it("queues every verb before start and answers nothing", async () => {
+    expect(mirafive("track", "queued")).toBeUndefined()
 
-    start({
-      plugins: [{ name: "flags", setup: (core) => core.expose({ onFlags, setFlagProperties }) }, astro()]
-    })
-
-    const listener = vi.fn()
-
-    expect(mirafive("flags", listener)).toBeTypeOf("function")
-    mirafive("flagProperties", { plan: "pro" })
-
-    expect(onFlags).toHaveBeenCalledWith(listener)
-    expect(setFlagProperties).toHaveBeenCalledWith({ plan: "pro" })
-  })
-
-  it("answers queued flag reads with the fallback and never replays them", async () => {
-    const flag = vi.fn(() => "b")
-    const config = vi.fn()
-
-    expect(mirafive("flag", "pricing-test", "a")).toBe("a")
-    expect(mirafive("config", "limits", { max: 1 })).toEqual({ max: 1 })
-    expect(w["mirafive"]).toBeUndefined()
-    // The hosted tracker's stub queues everything; the plugin skips the reads when it replays.
-    w["mirafive"] = Object.assign(() => undefined, {
-      q: [
-        ["flag", "pricing-test", "a"],
-        ["track", "kept"]
-      ]
-    })
-    const client = start({
-      plugins: [{ name: "flags", setup: (core) => core.expose({ flag, config }) }, astro()]
-    })
+    const client = start({ plugins: [astro()] })
 
     await client.flush()
-    expect(flag).not.toHaveBeenCalled()
-    expect(config).not.toHaveBeenCalled()
-    expect(events().map((event) => event.name)).toEqual(["kept"])
-    expect(mirafive("flag", "pricing-test", "a")).toBe("b")
-    expect(flag).toHaveBeenCalledWith("pricing-test", "a")
+    expect(events().map((event) => event.name)).toEqual(["queued"])
   })
 
   it("warns about unknown verbs in development", () => {
