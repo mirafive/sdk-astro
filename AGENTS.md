@@ -1,62 +1,31 @@
-# Agents working in mirafive/sdk-astro
+# Working on @mirafive/astro
 
-`@mirafive/sdk-astro`: the Astro integration (bundles `@mirafive/sdk-browser` into the
-site's own JavaScript). Part of the MIRA FIVE SDK family; the
-wire contract and public API live in
-[mirafive/protocol](https://github.com/mirafive/protocol) (PROTOCOL.md, API.md).
+Part of the MIRA FIVE SDKs (github.com/mirafive). Read README.md for what the package does.
 
 ## Commands
 
 ```sh
-bun install --frozen-lockfile
-bun run check            # format, lint, typecheck, test, build, publint, attw, size-limit
-bun run test             # vitest (happy-dom for test/client.test.ts)
-bun run size             # size-limit against the limits in .size-limit.js
-bun run example          # build first, then: npm install and astro build (default and full) in example/
+bun install
+bun run check     # format, lint, types, tests, build: exactly what CI runs
+bun test          # tests only
+bun run build     # dist/
 ```
 
-## Layout
-
-- `src/index.ts`: the integration. It injects `import "virtual:mirafive/astro"`; a Vite
-  plugin answers that module from `src/script.ts` once Vite has loaded the env, so the
-  key comes from `PUBLIC_MIRAFIVE_KEY` in any `.env`/mode. Its imports are file paths
-  resolved from this package (`import.meta.resolve`), not bare names, for pnpm.
-- `src/client.ts`: `astro()` (`window.mirafive` and the `<ClientRouter />` pageview hold)
-  and the `mirafive()` command. Browser code: bytes count.
-- `test/size/*.js`: the generated scripts size-limit measures; `test/integration.test.ts`
-  fails when the generator drifts from them. `baseline.js` is the same `createMira` call
-  without this package.
-- `example/`: an Astro 7 site (node adapter) on this package
-  (`file:..`) and the published sdk-browser. Installed with npm. Not in the npm
-  package.
+CI also packs the package, installs it into a fresh app, type-checks it under `bundler` and
+`nodenext` resolution and loads it in Node (mirafive/.github, scripts/verify-package.ts).
 
 ## Rules
 
-- API.md is the contract for this package's public surface. Do not add, rename or
-  remove exports without changing API.md first.
-- Thin: no transport. Everything goes through sdk-browser's `MiraCore`; `context.sdk`
-  stays what the SDK reports.
-- Bundle size: the default injected script stays within ~240 B (min + gzip) of
-  `baseline.js` (the goal was 150 B; the tracker verbs and the
-  unknown-verb warning cost ~100 B). Limits in
-  `.size-limit.js` are the measured size plus ~3 %. Grow `astro()` only with a reason in
-  the change.
-- The injected script imports only the sdk-browser subpaths the config needs; keep the
-  plugin order pageviews, identity, autocapture, search, astro
-  (`astro()` last, so queued consent reaches identity before the landing pageview).
-- Each entry is its own subpath; `sideEffects: false` must stay true.
-- Transport failures never throw into the caller's code (API.md, shared rules).
-- A secret key never reaches browser code: the integration refuses `secretKey` and a
-  key equal to `MIRAFIVE_SECRET_KEY`.
-- Comments only for a non-obvious constraint, one or two lines.
-- Do not run git write commands unless asked; the maintainer commits.
-
-## Dependencies
-
-sdk-browser is an ordinary `^1.0.0` dependencies from npm. To try an
-unreleased change, build the sibling repo and `bun link` it; never commit a `file:` path
-or `overrides`.
+- No runtime dependencies besides other `@mirafive/*` packages; frameworks are peers.
+- Event methods never throw into the host and never block it: report problems instead.
+- A secret key (`mira_sk_…`) never reaches browser code; a public key (`mira_pk_…`) is refused
+  on the server.
+- What goes on the wire is defined by `@mirafive/protocol`; tests check events with its
+  `validateEvent`.
+- Tests for every change. Comments explain why, briefly. Conventional Commits.
 
 ## Releasing
 
-To release, bump `version` in `package.json` (and any SDK version constant), add a `## X.Y.Z — YYYY-MM-DD` section to `CHANGELOG.md`, commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. `.github/workflows/release.yml` checks both, runs `bun run check`, stages it on npm through trusted publishing (no token) and creates the GitHub release from the changelog section. The version goes live only after a maintainer approves it with 2FA on npmjs.com (`npm stage approve`). Never `npm publish` from a laptop.
+Bump `version` in package.json, add a `## x.y.z — YYYY-MM-DD` section to
+CHANGELOG.md, and merge to main: the release workflow publishes to npm with provenance, tags
+`vx.y.z` and creates the GitHub release. Never publish from a laptop.

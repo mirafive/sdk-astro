@@ -1,130 +1,73 @@
-import { fileURLToPath } from "node:url"
-
-import type { AstroIntegration } from "astro"
-
-import { clientScript, type Feature } from "./script.ts"
-
-export type { Feature } from "./script.ts"
+/**
+ * `@mirafive/astro`: MIRA FIVE for Astro, as an integration.
+ *
+ * ```ts
+ * // astro.config.mjs
+ * import mirafive from "@mirafive/astro";
+ *
+ * export default defineConfig({ integrations: [mirafive()] }); // reads PUBLIC_MIRAFIVE_KEY
+ * ```
+ *
+ * Every page gets the browser SDK, bundled by Astro (no third-party script tag). Your own scripts
+ * use the same client: `import { mira } from "@mirafive/astro/client"`.
+ */
+import type { AutocaptureOptions, ConsentChoice } from "@mirafive/web";
 
 export interface MirafiveOptions {
-  /** The source's website key (`mf_…`). Default: `PUBLIC_MIRAFIVE_KEY`. */
-  key?: string
-  /** Default `https://collect.mirafive.io`. */
-  host?: string
-  /** Default `"consentless"`. `"full"` adds `identity()` and waits for `consent()`. */
-  mode?: "consentless" | "full"
-  /** Plugins bundled besides pageviews. `search` needs mode `"full"`. */
-  features?: Feature[]
-  /** Also run under `astro dev` (and send from localhost there). Default `false`. */
-  dev?: boolean
-  /** Also send from `localhost`, `127.*`, `[::1]`, `*.local` and `file:`. */
-  trackLocalhost?: boolean
+  /** The project's public key (`mira_pk_…`). Default: `PUBLIC_MIRAFIVE_KEY`. */
+  key?: string;
+  /** Ingest origin. Default: `PUBLIC_MIRAFIVE_HOST`, else `https://events.mirafive.io`. */
+  host?: string;
+  /** `'auto'` (default) follows the consent banner; an object sets it for custom banners. */
+  consent?: "auto" | ConsentChoice;
+  /** What the SDK captures on its own; all on by default. */
+  autocapture?: boolean | AutocaptureOptions;
+  debug?: boolean;
+  /** Also send from `astro dev`. Default `false`, so local work stays out of your numbers. */
+  dev?: boolean;
 }
 
-const known: readonly Feature[] = ["autocapture", "search"]
-const virtual = "virtual:mirafive/astro"
-
-// From this package, not the project root: pnpm links the sdk-browser peer beside this package only.
-const resolve = (specifier: string): string => {
-  try {
-    return fileURLToPath(import.meta.resolve(specifier)).replaceAll("\\", "/")
-  } catch {
-    return specifier
-  }
+/** The parts of Astro's integration API this package uses. Compatible with `AstroIntegration`. */
+export interface MirafiveIntegration {
+  name: string;
+  hooks: {
+    "astro:config:setup": (params: {
+      command: string;
+      injectScript: (stage: "page", content: string) => void;
+      logger: { info: (message: string) => void; warn: (message: string) => void };
+    }) => void;
+  };
 }
 
-const fail = (message: string): never => {
-  throw new TypeError(`[@mirafive/sdk-astro] ${message}`)
+/** The module Astro bundles into every page. */
+export function clientScript({ key, host, dev: _, ...options }: MirafiveOptions): string {
+  const settings = JSON.stringify(options);
+  return [
+    `import { mira } from "@mirafive/astro/client";`,
+    `const key = ${JSON.stringify(key ?? "")} || import.meta.env.PUBLIC_MIRAFIVE_KEY;`,
+    `const host = ${JSON.stringify(host ?? "")} || import.meta.env.PUBLIC_MIRAFIVE_HOST || undefined;`,
+    `if (key) mira.init({ ...${settings}, key, host });`,
+    `else console.warn("MIRA FIVE: no public key: set PUBLIC_MIRAFIVE_KEY or pass { key } to mirafive(). Nothing is sent.");`,
+  ].join("\n");
 }
 
-/** Bundles `@mirafive/sdk-browser` into every page, with only the plugins `features` names. */
-export const mirafive = (options: MirafiveOptions = {}): AstroIntegration => {
-  const { host, mode = "consentless", dev = false } = options
-  const features = new Set(options.features)
-
-  if ("secretKey" in options) {
-    fail("secret keys are server-only: pass the website key as `key`")
+export default function mirafive(options: MirafiveOptions = {}): MirafiveIntegration {
+  if (options.key?.startsWith("mira_sk_")) {
+    throw new Error(
+      "MIRA FIVE: the key passed to mirafive() is a secret key (mira_sk_…). It would ship to every browser: use the project's public key (mira_pk_…).",
+    );
   }
-
-  if (mode !== "consentless" && mode !== "full") {
-    fail(`unknown mode "${String(mode)}"`)
-  }
-
-  if (host !== undefined && !/^https?:\/\/./.test(host)) {
-    fail("host needs a scheme")
-  }
-
-  for (const feature of features) {
-    if (!known.includes(feature)) {
-      fail(`unknown feature "${feature}"`)
-    }
-
-    if (mode !== "full" && feature === "search") {
-      fail(`"${feature}" needs mode "full"`)
-    }
-  }
-
   return {
-    name: "@mirafive/sdk-astro",
+    name: "@mirafive/astro",
     hooks: {
-      "astro:config:setup": ({ command, injectScript, updateConfig, logger }) => {
-        const on = command !== "dev" || dev
-        let env: Record<string, string | undefined> = {}
-
-        updateConfig({
-          vite: {
-            ssr: { noExternal: ["@mirafive/sdk-astro"] },
-            plugins: on
-              ? [
-                  {
-                    name: "mirafive:astro",
-                    configResolved: (config) => void (env = config.env),
-                    resolveId: (id) => (id === virtual ? `\0${virtual}` : undefined),
-                    load: (id) => {
-                      if (id !== `\0${virtual}`) {
-                        return undefined
-                      }
-
-                      const key = (options.key ?? env["PUBLIC_MIRAFIVE_KEY"] ?? "").trim()
-
-                      if (key && key === process.env["MIRAFIVE_SECRET_KEY"]?.trim()) {
-                        fail(
-                          "the key is MIRAFIVE_SECRET_KEY: browsers get the website key, never the secret key"
-                        )
-                      }
-
-                      if (!key) {
-                        logger.warn("no website key: set PUBLIC_MIRAFIVE_KEY or pass `key`; nothing is sent")
-
-                        return ""
-                      }
-
-                      return clientScript(
-                        {
-                          key,
-                          host,
-                          mode,
-                          features: known.filter((feature) => features.has(feature)),
-                          trackLocalhost: options.trackLocalhost ?? (command === "dev" && dev)
-                        },
-                        resolve
-                      )
-                    }
-                  }
-                ]
-              : []
-          }
-        })
-
-        if (on) {
-          injectScript("page", `import "${virtual}"`)
-        } else {
-          logger.info("off under `astro dev`; pass `dev: true` to send from the dev server")
+      "astro:config:setup": ({ command, injectScript, logger }) => {
+        if (command === "dev" && !options.dev) {
+          logger.info("off under astro dev; pass { dev: true } to send from the dev server");
+          return;
         }
-      }
-    }
-  }
+        if (command !== "dev" && command !== "build") return;
+        injectScript("page", clientScript(options));
+      },
+    },
+  };
 }
-
-// oxlint-disable-next-line import/no-default-export -- `astro add` imports the integration by its default export
-export default mirafive
