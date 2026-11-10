@@ -1,6 +1,6 @@
 {
   "name": "@mirafive/astro",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "MIRA FIVE for Astro: one integration line puts consent-aware analytics on every page, bundled by Astro, with view transitions and a shared client for your scripts.",
   "keywords": [
     "analytics",
@@ -54,12 +54,12 @@
     "typecheck": "bun check"
   },
   "dependencies": {
-    "@mirafive/web": "^2.0.0"
+    "@mirafive/web": "^2.0.2"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
-    "oxfmt": "^0.77.0",
-    "oxlint": "^1.92.0",
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0",
     "oxlint-tsgolint": "^7.0.2006",
     "typescript": "^7.0.2"
   },
