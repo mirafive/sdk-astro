@@ -5,7 +5,7 @@
     "": {
       "name": "@mirafive/astro",
       "dependencies": {
-        "@mirafive/web": "^2.0.3",
+        "@mirafive/web": "^2.1.1",
       },
       "devDependencies": {
         "@types/bun": "^1.4.4",
@@ -150,9 +150,9 @@
 
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.6.0", "", {}, "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw=="],
 
-    "@mirafive/protocol": ["@mirafive/protocol@2.3.0", "", { "bin": { "mirafive-validate": "dist/cli.js" } }, "sha512-XCBV7CsJ8AVnExrK4sY+GwBYCOpoRp1ucazUzc35R83Vu+hEPe3m1YlgRAASxuHcTIaU3Lmbj7ZVc1oNH+QH4g=="],
+    "@mirafive/protocol": ["@mirafive/protocol@2.4.0", "", { "bin": { "mirafive-validate": "dist/cli.js" } }, "sha512-v4vmvW2xh3qXjLSpy/Utuhatr0uW53CKNOP/2aEMiK571Ib0szuPiL2HlM7t7zyjLDSXi8q1Fj0ONSQQFYRxPQ=="],
 
-    "@mirafive/web": ["@mirafive/web@2.0.3", "", { "dependencies": { "@mirafive/protocol": "^2.3.0" } }, "sha512-v0hevwKZmMOEF3iDwywt3UaZdKRD5JNSTvOdsq2x+ZP3czAP2hRxRmjbdllqYlQGLCgPq8aKkMin0b+lZ8oxeQ=="],
+    "@mirafive/web": ["@mirafive/web@2.1.1", "", { "dependencies": { "@mirafive/protocol": "^2.4.0" } }, "sha512-xnY21iJyF1P+3ylT1NrkQXZuhHHdbK1c3fJ8PtRBlujz63dvaO4xdId1zVMR886umfbsJHxMjtiBYZh7dVjQBw=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.2.7", "", { "dependencies": { "@tybys/wasm-util": "^0.10.3" }, "peerDependencies": { "@emnapi/core": "^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3", "@emnapi/runtime": "^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3" } }, "sha512-zJccwplOAbgfZju95IUHazLnx9RAPtPN2YGJXI6UbrgeaR9QfPjGrQL6ERkSAtnVCA4Q+83ApGyaX5zdpCaKkQ=="],
 
